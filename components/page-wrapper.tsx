@@ -1,4 +1,5 @@
 //page wrapper using breadcrumb
+"use client";
 import React from "react";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "./ui/sidebar";
@@ -13,9 +14,19 @@ import {
 } from "./ui/breadcrumb";
 export type PageWrapperProps = {
   children: React.ReactNode;
+  breadcrumbs: {
+    label: string;
+    href: string;
+  }[]; // Changed from breadcrum to breadcrumb for consistency
 };
-export default function PageWrapper({ children }: PageWrapperProps) {
+
+export default function PageWrapper({
+  children,
+  breadcrumbs,
+}: PageWrapperProps) {
   //add modetoggle for theme change
+  // get note name from url and the breadcrum should be dynamic accordingly
+
   return (
     <div className="w-full">
       <SidebarInset>
@@ -23,14 +34,30 @@ export default function PageWrapper({ children }: PageWrapperProps) {
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
             <div>
+              {/**I want dynamic breadcrum with current page name  that show note opened from the dashboard
+              dashboard/(notename) handle it professionally according to common practise**/}
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
                     <BreadcrumbLink href="#">Better Note</BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
+
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Dashboard</BreadcrumbPage>
+                    <BreadcrumbPage>
+                      {breadcrumbs.map((breadcrumb) => {
+                        return (
+                          <BreadcrumbItem
+                            key={breadcrumb.label}
+                            className="hover:cursor-pointer"
+                          >
+                            <BreadcrumbLink href={breadcrumb.href}>
+                              {breadcrumb.label}
+                            </BreadcrumbLink>
+                          </BreadcrumbItem>
+                        );
+                      })}
+                    </BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>

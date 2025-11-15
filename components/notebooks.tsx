@@ -59,8 +59,12 @@ function NoteBooks() {
     try {
       setLoading(true);
       const { data } = await getNotebooks();
-      const parsedData = JSON.parse(data || "[]");
-      setNotebooks(parsedData);
+      if (!data) {
+        toast.error("Failed to load notebooks");
+        return;
+      }
+      setNotebooks(data);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching notebooks:", error);
       toast.error("Failed to load notebooks");

@@ -97,4 +97,5 @@ export const note = pgTable("note", {
 
 //type export for crud operation in server actions
 export type insertNotebook = typeof notebook.$inferInsert;
+export type typeNotebook = typeof notebook.$inferSelect;
 export type insertNote = typeof note.$inferInsert;
