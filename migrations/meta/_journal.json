@@ -8,6 +8,20 @@
       "when": 1761294508350,
       "tag": "0000_abnormal_warhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1763298841908,
+      "tag": "0001_legal_barracuda",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763306999886,
+      "tag": "0002_outstanding_payback",
+      "breakpoints": true
     }
   ]
 }

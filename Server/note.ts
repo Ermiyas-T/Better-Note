@@ -1,5 +1,5 @@
 // I just copy and pasted @Server/notebook.ts make some adjustmenst to it
-import { insertNote, note } from "@/db/schema";
+import { insertNote, notes } from "@/db/schema";
 import { db } from "@/db/drizzle";
 import { eq } from "drizzle-orm";
 interface renameNoteProps {
@@ -8,19 +8,19 @@ interface renameNoteProps {
 }
 export const getNoteById = async (id: string) => {
   try {
-    const [data] = await db.select().from(note).where(eq(note.id, id)).limit(1);
+    const data = await db.query.notes.findFirst({ where: eq(notes.id, id) });
     if (!data) {
       return { success: false, message: "Note not found" };
     }
-    return { 
-      success: true, 
-      note: data 
+    return {
+      success: true,
+      note: data,
     };
   } catch (error) {
     const e = error as Error;
-    return { 
-      success: false, 
-      message: e.message || "Failed to get note" 
+    return {
+      success: false,
+      message: e.message || "Failed to get note",
     };
   }
 };
@@ -31,7 +31,7 @@ export const createNote = async ({
   content,
 }: insertNote) => {
   try {
-    await db.insert(note).values({ notebookId, title, content });
+    await db.insert(notes).values({ notebookId, title, content });
     return { success: true, message: "Note created successfully" };
   } catch (error) {
     const e = error as Error;
@@ -43,7 +43,7 @@ export const createNote = async ({
 };
 export const renameNote = async ({ id, title }: renameNoteProps) => {
   try {
-    await db.update(note).set({ title }).where(eq(note.id, id));
+    await db.update(notes).set({ title }).where(eq(notes.id, id));
     return { success: true, message: "Notebook renamed successfully" };
   } catch (error) {
     const e = error as Error;
@@ -55,7 +55,7 @@ export const renameNote = async ({ id, title }: renameNoteProps) => {
 };
 export const deleteNote = async (id: string) => {
   try {
-    await db.delete(note).where(eq(note.id, id));
+    await db.delete(notes).where(eq(notes.id, id));
     return { success: true, message: "Note is deleted successfully" };
   } catch (error) {
     const e = error as Error;

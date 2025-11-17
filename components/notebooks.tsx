@@ -58,12 +58,12 @@ function NoteBooks() {
   const fetchNotebooks = async () => {
     try {
       setLoading(true);
-      const { data } = await getNotebooks();
-      if (!data) {
+      const { notebooks } = await getNotebooks();
+      if (!notebooks) {
         toast.error("Failed to load notebooks");
         return;
       }
-      setNotebooks(data);
+      setNotebooks(notebooks);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching notebooks:", error);
@@ -148,7 +148,7 @@ function NoteBooks() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mx-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">My Notebooks</h2>
         <Button onClick={handleCreateNotebookClick}>

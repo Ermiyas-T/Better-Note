@@ -24,7 +24,8 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
-import { sign } from "crypto";
+import { FcGoogle } from "react-icons/fc";
+import { useState } from "react";
 
 const formSchema = z.object({
   email: z.email("Invalid email address"),
@@ -45,17 +46,23 @@ export function LoginForm({
       password: "",
     },
   });
+  const [googleSignInLoading, setGoogleSignInLoading] = useState(false);
   const googleSignIn = async () => {
     //sign in with optimistic toast message and try catch wrapping
     try {
+      setGoogleSignInLoading(true);
       await authClient.signIn.social({
         provider: "google",
       });
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Small delay to ensure session is set
+
       toast.success("Logged in successfully");
       router.push("/dashboard");
     } catch (e) {
       const error = e as Error;
       toast.error("Failed to sign in " + error.message);
+    } finally {
+      setGoogleSignInLoading(false);
     }
   };
   const router = useRouter();
@@ -71,6 +78,7 @@ export function LoginForm({
       } else {
         toast.success("Logged in successfully");
         toast.info("please check your email for verification");
+        await new Promise((resolve) => setTimeout(resolve, 500)); // Small delay to ensure session is set
         router.push("/dashboard");
         console.log(response);
       }
@@ -154,7 +162,13 @@ export function LoginForm({
                 onClick={googleSignIn}
                 className="hover:cursor-pointer"
               >
-                Login with Google
+                {googleSignInLoading ? (
+                  <Loader2 className="h-2 w-2 animate-spin" />
+                ) : (
+                  <div className="flex gap-1 items-center">
+                    Sign in with google <FcGoogle />
+                  </div>
+                )}
               </Button>
               <FieldDescription className="text-center">
                 Create an account? <Link href="/signup">Sign up</Link>

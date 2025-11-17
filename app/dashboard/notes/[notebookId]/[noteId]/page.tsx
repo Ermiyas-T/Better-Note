@@ -4,6 +4,7 @@ import React from "react";
 
 interface PageProps {
   params: {
+    notebookId: string;
     noteId: string;
   };
 }
@@ -15,11 +16,12 @@ async function NotePage({ params }: PageProps) {
   if (!result.success || !result.note) {
     notFound();
   }
+  const { note } = result;
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">{result.note.title}</h1>
-      <div className="prose max-w-none">{result.note.content}</div>
+      <h1 className="text-2xl font-bold mb-4">{note.title}</h1>
+      <div className="prose max-w-none">{note.content}</div>
     </div>
   );
 }

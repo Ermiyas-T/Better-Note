@@ -1,4 +1,6 @@
 import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { Users } from "lucide-react";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -63,7 +65,7 @@ export const verification = pgTable("verification", {
 // create notebook , note tables
 
 //on delete cascade
-export const notebook = pgTable("notebook", {
+export const notebooks = pgTable("notebooks", {
   id: text("id")
     .primaryKey()
     .$default(() => crypto.randomUUID()),
@@ -77,15 +79,14 @@ export const notebook = pgTable("notebook", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
-// table relationship notebook and note
 
-export const note = pgTable("note", {
+export const notes = pgTable("notes", {
   id: text("id")
     .primaryKey()
     .$default(() => crypto.randomUUID()),
   notebookId: text("notebook_id")
     .notNull()
-    .references(() => notebook.id, { onDelete: "cascade" }),
+    .references(() => notebooks.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -94,8 +95,21 @@ export const note = pgTable("note", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
-
+// table relationship notebook and note
+export const notebooksRelations = relations(notebooks, ({ many, one }) => ({
+  user: one(user, {
+    fields: [notebooks.userId],
+    references: [user.id],
+  }),
+  notes: many(notes),
+}));
+export const notesRelations = relations(notes, ({ one }) => ({
+  notebooks: one(notebooks, {
+    fields: [notes.notebookId],
+    references: [notebooks.id],
+  }),
+}));
 //type export for crud operation in server actions
-export type insertNotebook = typeof notebook.$inferInsert;
-export type typeNotebook = typeof notebook.$inferSelect;
-export type insertNote = typeof note.$inferInsert;
+export type insertNotebook = typeof notebooks.$inferInsert;
+export type typeNotebook = typeof notebooks.$inferSelect;
+export type insertNote = typeof notes.$inferInsert;

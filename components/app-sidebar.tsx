@@ -22,29 +22,28 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { getNotebooks } from "@/Server/notebook";
-import { getNotes } from "@/Server/note";
 import Link from "next/link";
+import { notes } from "@/db/schema";
 
 // the sidebar should imply the notebook name and note under it
-const { data: notebooks } = await getNotebooks();
+const { notebooks } = await getNotebooks();
 // what about notes under the notebooks
 // get notebookId or create function that will be used in the page
 // create function for onclick
 const data = {
-  navMain:
-    notebooks?.map((notebook) => {
-      return {
-        title: notebook.name,
-        url: `/dashboard/${notebook.id}`,
-        items: [
-          {
-            title: notebook.name,
-            url: `/dashboard/${notebook.id}/${note.id}`,
-            // isActive: true,
-          },
-        ],
-      };
-    }) || [],
+  navMain: notebooks?.map((notebook) => {
+    return {
+      title: notebook.name,
+      url: `/dashboard/${notebook.id}`,
+      items:
+        notebook.notes?.map((note) => {
+          return {
+            title: note.title,
+            url: `/dashboard/notes/${notebook.id}/${note.id}`,
+          };
+        }) || [],
+    };
+  }),
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

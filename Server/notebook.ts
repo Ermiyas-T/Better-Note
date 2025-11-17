@@ -1,9 +1,9 @@
-import { insertNotebook, notebook, typeNotebook } from "@/db/schema";
+"use server";
+import { insertNotebook, notebooks, typeNotebook } from "@/db/schema";
 import { db } from "@/db/drizzle";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { success } from "zod";
 interface renameNotebookProps {
   id: string;
   name: string;
@@ -20,23 +20,36 @@ export const getNotebooks = async () => {
   try {
     const userId = await getUserId();
     if (!userId) {
-      return { success: false, message: "User is not found" };
+      return { success: false, notebooks: [] };
     }
-    const notebooks = await db
-      .select()
-      .from(notebook)
-      .where(eq(notebook.userId, userId));
-    return { success: true, data: notebooks };
+    // return notebooks with notes under them
+    const result = await db.query.notebooks.findMany({
+      where: eq(notebooks.userId, userId),
+      with: {
+        notes: true,
+      },
+    });
+    return { success: true, notebooks: result };
   } catch (error) {
     const e = error as Error;
-    return { success: false, message: e.message || "Failed to get notebooks" };
+    return {
+      success: false,
+      notebooks: [],
+      message: e.message || "Failed to get notebooks",
+    };
   }
 };
 // get notebook by id
 export const getNotebookById = async ({ id }: typeNotebook) => {
   try {
-    const data = db.select().from(notebook).where(eq(notebook.id, id));
-    return { success: true, data: data };
+    const userId = await getUserId();
+    if (!userId) {
+      return { success: false, message: "Unauthorized" };
+    }
+    const result = await db.query.notebooks.findFirst({
+      where: and(eq(notebooks.id, id), eq(notebooks.userId, userId)),
+    });
+    return { success: true, notebook: result };
   } catch (error) {
     const e = error as Error;
     return {
@@ -53,7 +66,7 @@ export const createNotebook = async ({ name }: insertNotebook) => {
     if (!userId) {
       return { success: false, message: "User is not found" };
     }
-    await db.insert(notebook).values({ name, userId });
+    await db.insert(notebooks).values({ name, userId });
     return { success: true, message: "Notebook created successfully" };
   } catch (error) {
     const e = error as Error;
@@ -65,7 +78,7 @@ export const createNotebook = async ({ name }: insertNotebook) => {
 };
 export const renameNotebook = async ({ id, name }: renameNotebookProps) => {
   try {
-    await db.update(notebook).set({ name }).where(eq(notebook.id, id));
+    await db.update(notebooks).set({ name }).where(eq(notebooks.id, id));
     return { success: true, message: "Notebook renamed successfully" };
   } catch (error) {
     const e = error as Error;
@@ -77,7 +90,7 @@ export const renameNotebook = async ({ id, name }: renameNotebookProps) => {
 };
 export const deleteNotebook = async (id: string) => {
   try {
-    await db.delete(notebook).where(eq(notebook.id, id));
+    await db.delete(notebooks).where(eq(notebooks.id, id));
     return { success: true, message: "Notebook deleted successfully" };
   } catch (error) {
     const e = error as Error;
