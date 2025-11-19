@@ -47,6 +47,7 @@ export function LoginForm({
     },
   });
   const [googleSignInLoading, setGoogleSignInLoading] = useState(false);
+  const router = useRouter();
   const googleSignIn = async () => {
     //sign in with optimistic toast message and try catch wrapping
     try {
@@ -65,7 +66,6 @@ export function LoginForm({
       setGoogleSignInLoading(false);
     }
   };
-  const router = useRouter();
   async function onSubmit(data: z.infer<typeof formSchema>) {
     try {
       // const {data:response,error} = await authClient.signIn.email(email:data.email,password:data.password);

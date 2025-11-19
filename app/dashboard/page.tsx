@@ -1,16 +1,13 @@
-"use client";
 import { AppSidebar } from "@/components/app-sidebar";
 import NoteBooks from "@/components/notebooks";
 import PageWrapper from "@/components/page-wrapper";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
-export default async function Page() {
+// This is now a Server Component by default (no 'use client')
+export default function DashboardPage() {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <PageWrapper breadcrumbs={[{ href: "/dashboard", label: "Dashboard" }]}>
-        <NoteBooks />
-      </PageWrapper>
-    </SidebarProvider>
+    <PageWrapper breadcrumbs={[{ href: "/dashboard", label: "Dashboard" }]}>
+      <NoteBooks />
+    </PageWrapper>
   );
 }

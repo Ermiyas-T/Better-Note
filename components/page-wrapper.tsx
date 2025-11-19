@@ -1,7 +1,6 @@
 //page wrapper using breadcrumb
 "use client";
 import React from "react";
-import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "./ui/sidebar";
 import { ModeToggle } from "@/components/modeToggle";
 import {
@@ -39,26 +38,27 @@ export default function PageWrapper({
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">Better Note</BreadcrumbLink>
+                    <BreadcrumbLink href="/">Home</BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
 
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>
-                      {breadcrumbs.map((breadcrumb) => {
-                        return (
-                          <BreadcrumbItem
-                            key={breadcrumb.label}
-                            className="hover:cursor-pointer"
-                          >
-                            <BreadcrumbLink href={breadcrumb.href}>
-                              {breadcrumb.label}
-                            </BreadcrumbLink>
-                          </BreadcrumbItem>
-                        );
-                      })}
-                    </BreadcrumbPage>
-                  </BreadcrumbItem>
+                  <BreadcrumbPage>
+                    {breadcrumbs.map((breadcrumb, index) => {
+                      return (
+                        <BreadcrumbItem
+                          key={breadcrumb.label}
+                          className="hover:cursor-pointer"
+                        >
+                          <BreadcrumbLink href={breadcrumb.href}>
+                            {breadcrumb.label}
+                          </BreadcrumbLink>
+                          {index !== breadcrumbs.length - 1 && (
+                            <BreadcrumbSeparator className="hidden md:block" />
+                          )}
+                        </BreadcrumbItem>
+                      );
+                    })}
+                  </BreadcrumbPage>
                 </BreadcrumbList>
               </Breadcrumb>
             </div>

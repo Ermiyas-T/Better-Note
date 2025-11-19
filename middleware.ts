@@ -1,18 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-// import { getSessionCookie } from "better-auth/cookies";
-
+import { getSessionCookie } from "better-auth/cookies";
+import { authRoutes, protectedRoutes } from "./routes";
 export async function middleware(request: NextRequest) {
-  // const sessionCookie = await getSessionCookie(request);
-  const session = await request.cookies.get("better-auth.session_token");
+  // get better auth cookies check
 
-  console.log("session cookie:" + session);
-  // console.log("session auth", auth);
-  if (!session) {
+  const cookies = await getSessionCookie(request);
+  const isAuthPage = authRoutes.includes(request.nextUrl.pathname);
+  const isProtectedPage = protectedRoutes.includes(request.nextUrl.pathname);
+
+  console.log("session cookie:" + cookies);
+  if (!cookies && !isAuthPage) {
     return NextResponse.redirect(new URL("/", request.url));
+  }
+  if (cookies && isAuthPage) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+  if (!cookies && isProtectedPage) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard"],
+  matcher: ["/dashboard/:path*", "/login", "/register", "/"],
 };

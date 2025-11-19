@@ -8,7 +8,7 @@ interface renameNotebookProps {
   id: string;
   name: string;
 }
-const getUserId = async (): Promise<string | undefined> => {
+const getUserId = async () => {
   const session = await auth.api.getSession({ headers: await headers() });
   const userId = session?.user.id;
   if (!userId) {
@@ -29,13 +29,13 @@ export const getNotebooks = async () => {
         notes: true,
       },
     });
+
     return { success: true, notebooks: result };
   } catch (error) {
     const e = error as Error;
     return {
       success: false,
       notebooks: [],
-      message: e.message || "Failed to get notebooks",
     };
   }
 };
