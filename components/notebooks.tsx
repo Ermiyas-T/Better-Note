@@ -32,6 +32,7 @@ import {
 import { Input } from "./ui/input";
 import { session } from "@/auth-schema";
 import { authClient } from "@/lib/auth-client";
+import { Skeleton } from "./ui/skeleton";
 
 interface Notebook extends insertNotebook {
   id: string;
@@ -140,15 +141,18 @@ function NoteBooks() {
   };
 
   if (loading) {
+    // skeleton on loading
     return (
-      <div className="flex items-center justify-center h-64">
-        <p>Loading notebooks...</p>
+      <div className="w-[95%] mx-auto grid grid-cols-3 mt-12 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-24 w-full mr-2 rounded-lg" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 mx-4">
+    <div className="space-y-4 mx-4 ">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">My Notebooks</h2>
         <Button onClick={handleCreateNotebookClick}>

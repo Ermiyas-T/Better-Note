@@ -1,5 +1,5 @@
 "use client";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FolderClosed, PenBox } from "lucide-react";
 
 // import { SearchForm } from "@/components/search-form";
 import {
@@ -70,7 +70,7 @@ export function AppSidebar({ initialNotebooks, ...props }: AppSidebarProps) {
         {/* We create a collapsible SidebarGroup for each parent. */}
         {data.navMain.map((notebook: any) => (
           <Collapsible
-            key={notebook.title}
+            key={notebook.url}
             title={notebook.title}
             defaultOpen
             className="group/collapsible"
@@ -80,18 +80,26 @@ export function AppSidebar({ initialNotebooks, ...props }: AppSidebarProps) {
                 asChild
                 className="group/label text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sm"
               >
-                <CollapsibleTrigger>
+                <CollapsibleTrigger className="flex gap-1">
+                  <FolderClosed className="h-4 w-4" />
                   {notebook.title}
                   <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
                 </CollapsibleTrigger>
               </SidebarGroupLabel>
               <CollapsibleContent>
+                {/** have professional space to the right */}
                 <SidebarGroupContent>
-                  <SidebarMenu>
+                  <SidebarMenu className="pl-2">
                     {notebook.items.map((item: any) => (
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton asChild>
-                          <Link href={item.url}>{item.title}</Link>
+                          <Link
+                            href={item.url}
+                            className="flex items-center gap-2"
+                          >
+                            <PenBox className="h-4 w-4 " />
+                            <span>{item.title}</span>
+                          </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     ))}
