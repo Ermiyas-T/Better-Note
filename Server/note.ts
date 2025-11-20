@@ -1,12 +1,12 @@
 // I just copy and pasted @Server/notebook.ts make some adjustmenst to it
-import { insertNote, notes } from "@/db/schema";
+import { insertNote, Notes, notes } from "@/db/schema";
 import { db } from "@/db/drizzle";
 import { eq } from "drizzle-orm";
 interface renameNoteProps {
   id: string;
   title: string;
 }
-export const getNoteById = async (id: string) => {
+export const getNoteById = async ({ id }: Notes) => {
   try {
     const data = await db.query.notes.findFirst({ where: eq(notes.id, id) });
     if (!data) {
@@ -29,10 +29,20 @@ export const createNote = async ({
   notebookId,
   title,
   content,
-}: insertNote) => {
+}: insertNote): Promise<{
+  success: boolean;
+  message: string;
+  note?: Notes;
+}> => {
   try {
-    await db.insert(notes).values({ notebookId, title, content });
-    return { success: true, message: "Note created successfully" };
+    const { rows } = await db
+      .insert(notes)
+      .values({ notebookId, title, content });
+    return {
+      success: true,
+      message: "Note created successfully",
+      note: rows[0],
+    };
   } catch (error) {
     const e = error as Error;
     return {
@@ -50,6 +60,18 @@ export const renameNote = async ({ id, title }: renameNoteProps) => {
     return {
       success: false,
       message: e.message || "Failed to rename notebook",
+    };
+  }
+};
+export const updateNote = async ({ id, content }: Notes) => {
+  try {
+    await db.update(notes).set({ content }).where(eq(notes.id, id));
+    return { success: true, message: "Note updated successfully" };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Failed to update the Note",
+      error: error,
     };
   }
 };

@@ -113,3 +113,5 @@ export const notesRelations = relations(notes, ({ one }) => ({
 export type insertNotebook = typeof notebooks.$inferInsert;
 export type typeNotebook = typeof notebooks.$inferSelect;
 export type insertNote = typeof notes.$inferInsert;
+export type renameNotebook = typeof notebooks.$inferSelect;
+export type Notes = typeof notes.$inferSelect;

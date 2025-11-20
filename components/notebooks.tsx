@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import {
   getNotebooks,
   deleteNotebook,
-  renameNotebook,
   createNotebook,
+  renameNotebookName,
 } from "@/Server/notebook";
 import { insertNotebook } from "@/db/schema";
 import { Card, CardHeader, CardTitle, CardDescription } from "./ui/card";
@@ -16,7 +16,14 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Button } from "./ui/button";
-import { Edit2Icon, EllipsisVertical, Plus, Trash2 } from "lucide-react";
+import {
+  Edit2Icon,
+  EllipsisVertical,
+  Eye,
+  Loader2,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
@@ -30,7 +37,6 @@ import {
   AlertDialogTitle,
 } from "./ui/alert-dialog";
 import { Input } from "./ui/input";
-import { session } from "@/auth-schema";
 import { authClient } from "@/lib/auth-client";
 import { Skeleton } from "./ui/skeleton";
 
@@ -45,11 +51,12 @@ function NoteBooks() {
   const [selectedNotebook, setSelectedNotebook] = useState<Notebook | null>(
     null
   );
+  const [notebookCreateLoading, setNotebookCreateLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [notebookName, setNotebookName] = useState("");
-  const [newName, setNewName] = useState("");
+  const [newNotebookName, setNewNotebookName] = useState<string>("");
   const router = useRouter();
 
   useEffect(() => {
@@ -79,7 +86,10 @@ function NoteBooks() {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleRenameClick = async () => {
+  const handleRenameClick = async (id: string) => {
+    const notebook = notebooks.filter((notebook) => notebook.id === id);
+    setSelectedNotebook(notebook);
+    setNewNotebookName(notebook[0].name);
     setIsRenameDialogOpen(true);
   };
   const handleCreateNotebookClick = () => {
@@ -102,10 +112,17 @@ function NoteBooks() {
   };
 
   const handleRename = async () => {
-    if (!selectedNotebook || !newName.trim()) return;
+    if (!newNotebookName?.trim()) return;
     try {
-      await renameNotebook({ id: selectedNotebook.id, name: newName });
-      toast.success("Notebook renamed successfully");
+      const result = await renameNotebookName({
+        id: selectedNotebook?.id,
+        name: newNotebookName,
+      });
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+      toast.success(result.message);
       fetchNotebooks();
     } catch (error) {
       console.error("Error renaming notebook:", error);
@@ -122,9 +139,10 @@ function NoteBooks() {
   const handleCreateNotebook = async (notebookName: string) => {
     // Navigate to create notebook page or open a modal
     // get userId from sessionstorage
+    // loading state with specific className
+    setNotebookCreateLoading(true);
     const session = await authClient.getSession();
     const userId = session?.data?.user?.id;
-    console.log(userId);
     if (!userId) {
       toast.error("User not authenticated" + userId);
       return;
@@ -132,12 +150,18 @@ function NoteBooks() {
     try {
       toast.success("Notebook created successfully");
       await createNotebook({ name: notebookName, userId });
+      setNotebookCreateLoading(false);
       // refresh to show the new notebook
       fetchNotebooks();
     } catch (error) {
       console.error("Error creating notebook:", error);
       toast.error("Failed to create notebook");
+      setNotebookCreateLoading(false);
     }
+  };
+  const handleNotebookClick = async (notebook: Notebook) => {
+    // add url to the existing url with out removing
+    router.push(`dashboard/notebooks/${notebook.id}`);
   };
 
   if (loading) {
@@ -152,15 +176,21 @@ function NoteBooks() {
   }
 
   return (
-    <div className="space-y-4 mx-4 ">
+    <div className="space-y-4 mx-4 mt-4 ">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">My Notebooks</h2>
-        <Button onClick={handleCreateNotebookClick}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Notebook
+        <Button onClick={handleCreateNotebookClick} className="w-40">
+          {notebookCreateLoading ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <div className="flex items-center">
+              <Plus className="mr-2 h-4 w-4" />
+              New Notebook
+            </div>
+          )}
         </Button>
       </div>
-
+      {/** when the user only  click notebook card  it should navigatet to the details page otherwise it should open the ellipsis menu */}
       {notebooks.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg">
           <p className="text-muted-foreground">No notebooks found</p>
@@ -177,10 +207,13 @@ function NoteBooks() {
           {notebooks.map((notebook) => (
             <Card
               key={notebook.id}
-              className="hover:shadow-md transition-shadow"
+              className="hover:shadow-md transition-shadow hover:border-b-accent-foreground hover:transition-all hover:scale-[1.005] hover:duration-200 hover:ease-in-out hover:cursor-pointer"
             >
               <CardHeader className="flex flex-row justify-between items-start space-y-0">
-                <div className="space-y-1">
+                <div
+                  className="space-y-1 "
+                  onClick={() => handleNotebookClick(notebook)}
+                >
                   <CardTitle className="text-lg">{notebook.name}</CardTitle>
                   {/*date and time */}
                   <CardDescription className="text-xs text-muted-foreground">
@@ -196,14 +229,21 @@ function NoteBooks() {
                   </CardDescription>
                 </div>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <DropdownMenuTrigger
+                    asChild
+                    className="cursor-pointer hover:border hover:border-accent-foreground hover:transition-all hover:scale-[1.005] hover:duration-200 hover:ease-in-out"
+                  >
+                    <Button variant="ghost" size="icon" className="h-8 w-8 ">
                       <EllipsisVertical className="h-4 w-4" />
-                      <span className="sr-only">More actions</span>
+                      <span className="sr-only hover:cursor-pointer">
+                        More actions
+                      </span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleRenameClick}>
+                    <DropdownMenuItem
+                      onClick={() => handleRenameClick(notebook.id)}
+                    >
                       <Edit2Icon className="mr-2 h-4 w-4" />
                       <span>Rename</span>
                     </DropdownMenuItem>
@@ -217,6 +257,18 @@ function NoteBooks() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </CardHeader>
+              {/** button to view details */}
+              <Button
+                variant="secondary"
+                size="icon"
+                className="ml-2 hover:bg-accent-foreground hover:text-accent  hover:ease-in-out hover:duration-500"
+                onClick={() => handleNotebookClick(notebook)}
+              >
+                <Eye className="h-4 w-4 " />
+                <span className="sr-only hover:cursor-pointer">
+                  View details
+                </span>
+              </Button>
             </Card>
           ))}
         </div>
@@ -262,8 +314,8 @@ function NoteBooks() {
           </AlertDialogHeader>
           <div className="py-4">
             <Input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
+              value={newNotebookName}
+              onChange={(e) => setNewNotebookName(e.target.value)}
               placeholder="Notebook name"
               autoFocus
             />
@@ -272,7 +324,7 @@ function NoteBooks() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRename}
-              disabled={!newName.trim()}
+              disabled={!newNotebookName.trim()}
             >
               Save Changes
             </AlertDialogAction>

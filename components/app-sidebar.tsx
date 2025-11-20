@@ -1,5 +1,5 @@
 "use client";
-import { ChevronRight, FolderClosed, PenBox } from "lucide-react";
+import { ChevronRight, FolderClosed, PenBox, PenTool } from "lucide-react";
 
 // import { SearchForm } from "@/components/search-form";
 import {
@@ -13,6 +13,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   // SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -63,9 +64,10 @@ export function AppSidebar({ initialNotebooks, ...props }: AppSidebarProps) {
   };
   return (
     <Sidebar {...props}>
-      {/* <SidebarHeader>
-        <SearchForm />
-      </SidebarHeader> */}
+      <SidebarHeader className="flex flex-row items-center gap-2 w-full font-bold text-2xl bg-accent text-accent-foreground">
+        <div> Better Note</div>
+        <PenTool className="h-4 w-4" />
+      </SidebarHeader>
       <SidebarContent className="gap-0">
         {/* We create a collapsible SidebarGroup for each parent. */}
         {data.navMain.map((notebook: any) => (
