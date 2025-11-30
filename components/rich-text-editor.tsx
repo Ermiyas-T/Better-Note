@@ -23,6 +23,7 @@ import {
   Highlighter,
   Strikethrough,
   Pilcrow,
+  Loader2,
 } from "lucide-react";
 import { updateNote } from "@/Server/note";
 
@@ -361,8 +362,9 @@ export function RichTextEditor({
         {/* Save status */}
         <div className="text-xs text-gray-500 dark:text-gray-400 ml-2">
           {isSaving ? (
-            <div className="bg-accent-foreground text-accent font-bold rounded-lg p-2">
-              Saving...
+            <div className="bg-green-400 text-white font-semibold rounded-sm py-2 px-3 flex gap-2">
+              Saving
+              <Loader2 className="w-4 h-4 animate-spin" />
             </div>
           ) : lastSaved ? (
             `Last saved: ${lastSaved.toLocaleTimeString()}`

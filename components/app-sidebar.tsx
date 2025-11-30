@@ -29,8 +29,8 @@ import {
 // import { getNotebooks } from "@/Server/notebook";
 import Link from "next/link";
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { parseAppSegmentConfig } from "next/dist/build/segment-config/app/app-segment-config";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { SearchForm } from "./search-form";
 // notebooks is array of object
 // the sidebar should imply the notebook name and note under it
 
@@ -55,6 +55,9 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 export function AppSidebar({ initialNotebooks, ...props }: AppSidebarProps) {
   const [notebooks, setNotebooks] = useState<Notebook[]>(initialNotebooks);
   const pathname = usePathname();
+  // search parameter to filter from url
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("search") || "";
   const isNotebookActive = (notebookId: string) => {
     return pathname.startsWith(`/dashboard/notebooks/${notebookId}`);
   };
@@ -83,15 +86,26 @@ export function AppSidebar({ initialNotebooks, ...props }: AppSidebarProps) {
         };
       }) || [],
   };
+  const filteredData = data.navMain.filter((notebook) => {
+    const notebooks = notebook.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const notes = notebook.items.filter((note) => {
+      const notes = note.title
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      return notes;
+    });
+    return notebooks || notes.length > 0;
+  });
   return (
     <Sidebar {...props}>
-      <SidebarHeader className="flex flex-row items-center gap-2 w-full font-bold text-2xl bg-accent text-accent-foreground">
-        <div> Better Note</div>
-        <PenTool className="h-4 w-4" />
+      <SidebarHeader className="w-full bg-accent ">
+        <SearchForm />
       </SidebarHeader>
       <SidebarContent className="gap-0">
         {/* We create a collapsible SidebarGroup for each parent. */}
-        {data.navMain.map((notebook: any) => (
+        {filteredData.map((notebook: any) => (
           <Collapsible
             key={notebook.url}
             title={notebook.title}
