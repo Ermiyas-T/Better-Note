@@ -1,6 +1,5 @@
 import PageWrapper from "@/components/page-wrapper";
 import { RichTextEditor } from "@/components/rich-text-editor";
-import NotePageData from "@/components/notePageData";
 import { getNoteById } from "@/Server/note";
 import { notFound } from "next/navigation";
 import { getNotebookById } from "@/Server/notebook";
@@ -34,12 +33,12 @@ async function NotePage({ params }: PageProps) {
         { label: notebook.name, href: `/dashboard/notebooks/${note.notebookId}` },
         {
           label: note.title,
-          href: `/dashboard/notes/${note.notebookId}/${note.id}`,
+          href: `/dashboard/notebooks/${note.notebookId}/${note.id}`,
         },
       ]}
     >
       <div className="p-4">
-        <h2>{note.title}</h2>
+        <h2 className="text-2xl font-bold pl-4 my-4">{note.title}</h2>
         <RichTextEditor content={note.content} noteId={note?.id} />
       </div>
     </PageWrapper>

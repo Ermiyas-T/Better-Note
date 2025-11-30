@@ -7,7 +7,7 @@ import {
   createNotebook,
   renameNotebookName,
 } from "@/Server/notebook";
-import { insertNotebook } from "@/db/schema";
+import { insertNotebook, Notes } from "@/db/schema";
 import { Card, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import {
   DropdownMenu,
@@ -39,10 +39,12 @@ import {
 import { Input } from "./ui/input";
 import { authClient } from "@/lib/auth-client";
 import { Skeleton } from "./ui/skeleton";
+import { convertDate } from "@/lib/date-converter";
 
 interface Notebook extends insertNotebook {
   id: string;
   name: string;
+  notes: Notes[];
 }
 
 function NoteBooks() {
@@ -56,7 +58,7 @@ function NoteBooks() {
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [notebookName, setNotebookName] = useState("");
-  const [newNotebookName, setNewNotebookName] = useState<string>("");
+  const [newNotebookName, setNewNotebookName] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -87,9 +89,10 @@ function NoteBooks() {
   };
 
   const handleRenameClick = async (id: string) => {
-    const notebook = notebooks.filter((notebook) => notebook.id === id);
+    const notebook = notebooks.find((notebook) => notebook.id === id) || null;
     setSelectedNotebook(notebook);
-    setNewNotebookName(notebook[0].name);
+    if (!notebook) return;
+    setNewNotebookName(notebook.name);
     setIsRenameDialogOpen(true);
   };
   const handleCreateNotebookClick = () => {
@@ -112,7 +115,7 @@ function NoteBooks() {
   };
 
   const handleRename = async () => {
-    if (!newNotebookName?.trim()) return;
+    if (!newNotebookName?.trim() || !selectedNotebook?.id) return;
     try {
       const result = await renameNotebookName({
         id: selectedNotebook?.id,
@@ -168,8 +171,8 @@ function NoteBooks() {
     // skeleton on loading
     return (
       <div className="w-[95%] mx-auto grid grid-cols-3 mt-12 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 w-full mr-2 rounded-lg" />
+        {Array.from({ length: 12 }).map((_, i) => (
+          <Skeleton key={i} className="h-28 w-full mr-2 rounded-lg" />
         ))}
       </div>
     );
@@ -214,17 +217,18 @@ function NoteBooks() {
                   className="space-y-1 "
                   onClick={() => handleNotebookClick(notebook)}
                 >
-                  <CardTitle className="text-lg">{notebook.name}</CardTitle>
+                  <CardTitle className="text-lg flex flex-row justify-between items-center max-w-32">
+                    <h2 className="line-clamp-1">{notebook.name}</h2>
+                    <span className="text-xs text-muted-foreground bg-accent rounded-full px-2 py-1 relative -top-2   ">
+                      {notebook?.notes?.length || 0}
+                    </span>
+                  </CardTitle>
                   {/*date and time */}
                   <CardDescription className="text-xs text-muted-foreground">
                     {notebook.updatedAt
-                      ? `Updated at: ${new Date(
-                          notebook.updatedAt
-                        ).toLocaleString()}`
+                      ? `Updated: ${convertDate(notebook.updatedAt)}`
                       : notebook.createdAt
-                      ? `Created at: ${new Date(
-                          notebook.createdAt
-                        ).toLocaleString()}`
+                      ? `Created at: ${convertDate(notebook.createdAt)}`
                       : "N/A"}
                   </CardDescription>
                 </div>
@@ -324,7 +328,7 @@ function NoteBooks() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRename}
-              disabled={!newNotebookName.trim()}
+              disabled={!newNotebookName?.trim()}
             >
               Save Changes
             </AlertDialogAction>

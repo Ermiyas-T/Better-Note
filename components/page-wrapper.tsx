@@ -41,24 +41,27 @@ export default function PageWrapper({
                     <BreadcrumbLink href="/">Home</BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className="hidden md:block" />
-
-                  <BreadcrumbPage>
-                    {breadcrumbs.map((breadcrumb, index) => {
-                      return (
-                        <BreadcrumbItem
-                          key={breadcrumb.label}
-                          className="hover:cursor-pointer"
-                        >
-                          <BreadcrumbLink href={breadcrumb.href}>
+                  {breadcrumbs.map((breadcrumb, index) => (
+                    <React.Fragment key={breadcrumb.label}>
+                      {index === breadcrumbs.length - 1 ? (
+                        <BreadcrumbItem>
+                          <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
+                        </BreadcrumbItem>
+                      ) : (
+                        <BreadcrumbItem>
+                          <BreadcrumbLink
+                            href={breadcrumb.href}
+                            className="hover:underline"
+                          >
                             {breadcrumb.label}
                           </BreadcrumbLink>
-                          {index !== breadcrumbs.length - 1 && (
-                            <BreadcrumbSeparator className="hidden md:block" />
-                          )}
                         </BreadcrumbItem>
-                      );
-                    })}
-                  </BreadcrumbPage>
+                      )}
+                      {index < breadcrumbs.length - 1 && (
+                        <BreadcrumbSeparator className="hidden md:block" />
+                      )}
+                    </React.Fragment>
+                  ))}
                 </BreadcrumbList>
               </Breadcrumb>
             </div>
