@@ -1,34 +1,46 @@
 import PageWrapper from "@/components/page-wrapper";
+import { RichTextEditor } from "@/components/rich-text-editor";
+import NotePageData from "@/components/notePageData";
 import { getNoteById } from "@/Server/note";
 import { notFound } from "next/navigation";
-import React from "react";
+import { getNotebookById } from "@/Server/notebook";
+// import React, { useState } from "react";
 
 interface PageProps {
   params: {
-    notbookId: string;
+    notebookId: string;
     noteId: string;
   };
 }
-
 async function NotePage({ params }: PageProps) {
-  const { noteId } = await params;
+  const { noteId,notebookId } = params;
+  //fetch and get notebook title
+  const notebookResult = await getNotebookById({ id: notebookId });
+  if (!notebookResult.success || !notebookResult.notebook) {
+    notFound();
+  }
+  const { notebook } = notebookResult;
   const result = await getNoteById({ id: noteId });
 
   if (!result.success || !result.note) {
     notFound();
   }
   const { note } = result;
-
+  // const [noteState, setNoteState] = useState(note);
   return (
     <PageWrapper
       breadcrumbs={[
         { label: "Dashboard", href: "/dashboard" },
-        { label: "Notes", href: "/dashboard/notes" },
-        { label: note.title, href: `/dashboard/notes/${note.id}` },
+        { label: notebook.name, href: `/dashboard/notebooks/${note.notebookId}` },
+        {
+          label: note.title,
+          href: `/dashboard/notes/${note.notebookId}/${note.id}`,
+        },
       ]}
     >
       <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">{note.title}</h1>
+        <h2>{note.title}</h2>
+        <RichTextEditor content={note.content} noteId={note?.id} />
       </div>
     </PageWrapper>
   );
