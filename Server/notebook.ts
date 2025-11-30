@@ -1,15 +1,16 @@
 "use server";
-import {
-  renameNotebook,
-  insertNotebook,
-  notebooks,
-  typeNotebook,
-} from "@/db/schema";
+import { insertNotebook, notebooks } from "@/db/schema";
 import { db } from "@/db/drizzle";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-
+interface renameProps {
+  id: string;
+  name: string;
+}
+interface getNotebookProps {
+  id: string;
+}
 const getUserId = async () => {
   const session = await auth.api.getSession({ headers: await headers() });
   const userId = session?.user.id;
@@ -42,7 +43,7 @@ export const getNotebooks = async () => {
   }
 };
 // get notebook by id
-export const getNotebookById = async ({ id }: typeNotebook) => {
+export const getNotebookById = async ({ id }: getNotebookProps) => {
   try {
     const userId = await getUserId();
     if (!userId) {
@@ -79,7 +80,7 @@ export const createNotebook = async ({ name }: insertNotebook) => {
     };
   }
 };
-export const renameNotebookName = async ({ id, name }: renameNotebook) => {
+export const renameNotebookName = async ({ id, name }: renameProps) => {
   try {
     await db.update(notebooks).set({ name }).where(eq(notebooks.id, id));
     return { success: true, message: "Notebook renamed successfully" };
