@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,6 +23,8 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import { FcGoogle } from "react-icons/fc";
 
 const formSchema = z
   .object({
@@ -52,19 +54,20 @@ const formSchema = z
 //   }
 // }
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
+  const [Loading, setLoading] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
-      confirmPassword:"",
+      confirmPassword: "",
     },
   });
   const router = useRouter();
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    const { data: response, error} = await authClient.signUp.email({
+    const { data: response, error } = await authClient.signUp.email({
       name: data.name,
       email: data.email,
       password: data.password,
@@ -77,6 +80,24 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
       router.push("/dashboard");
     }
   }
+  const handleGoogleSignup = async () => {
+    //sign in with optimistic toast message and try catch wrapping
+    try {
+      setLoading(true);
+      await authClient.signIn.social({
+        provider: "google",
+      });
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Small delay to ensure session is set
+
+      toast.success("Logged in successfully");
+      router.push("/dashboard");
+    } catch (e) {
+      const error = e as Error;
+      toast.error("Failed to sign in " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <Card {...props}>
       <CardHeader>
@@ -162,9 +183,25 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 </Field>
               )}
             />
-            <Button type="submit">{form.formState.isSubmitting? <Loader2 className="h-2 w-2 animate-spin"/>: "Sign up Account"}</Button>
-            <Button variant="outline" type="button">
-              Sign up with Google
+            <Button type="submit">
+              {form.formState.isSubmitting ? (
+                <Loader2 className="h-2 w-2 animate-spin" />
+              ) : (
+                "Sign up Account"
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleGoogleSignup}
+            >
+              {Loading ? (
+                <Loader2 className="h-2 w-2 animate-spin" />
+              ) : (
+                <div className="flex items-center gap-2">
+                  Sign up with Google <FcGoogle />
+                </div>
+              )}
             </Button>
             <FieldDescription className="px-6 text-center">
               Already have an account? <Link href="/signin">Sign in</Link>
