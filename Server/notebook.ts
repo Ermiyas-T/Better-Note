@@ -67,7 +67,7 @@ export const getNotebookById = async ({ id }: getNotebookProps) => {
     };
   }
 };
-export const createNotebook = async ({ name }: insertNotebook) => {
+export const createNotebook = async ({ name }: { name: string }) => {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     const userId = session?.user.id;
