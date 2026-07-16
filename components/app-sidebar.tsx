@@ -3,11 +3,8 @@ import {
   BookIcon,
   ChevronRight,
   FolderClosed,
-  PenBox,
-  PenTool,
 } from "lucide-react";
 
-// import { SearchForm } from "@/components/search-form";
 import {
   Collapsible,
   CollapsibleContent,
@@ -20,40 +17,35 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
-  // SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-// import { getNotebooks } from "@/Server/notebook";
 import Link from "next/link";
-import { useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SearchForm } from "./search-form";
-// notebooks is array of object
-// the sidebar should imply the notebook name and note under it
+import type { NotebookItem } from "./notebook-context";
 
-// what about notes under the notebooks
-// get notebookId or create function that will be used in the page
-// create function for onclick
-interface Note {
-  id: string;
+interface SidebarNoteItem {
   title: string;
+  url: string;
+  isActive: boolean;
 }
 
-interface Notebook {
+interface SidebarNotebookItem {
+  title: string;
   id: string;
-  name: string;
-  notes?: Note[];
+  url: string;
+  isActive: boolean;
+  items: SidebarNoteItem[];
 }
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  initialNotebooks: Notebook[];
+  notebooks: NotebookItem[];
 }
 
-export function AppSidebar({ initialNotebooks, ...props }: AppSidebarProps) {
-  const [notebooks, setNotebooks] = useState<Notebook[]>(initialNotebooks);
+export function AppSidebar({ notebooks, ...props }: AppSidebarProps) {
   const pathname = usePathname();
   // search parameter to filter from url
   const searchParams = useSearchParams();
@@ -105,7 +97,7 @@ export function AppSidebar({ initialNotebooks, ...props }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarContent className="gap-0">
         {/* We create a collapsible SidebarGroup for each parent. */}
-        {filteredData.map((notebook: any) => (
+        {filteredData.map((notebook: SidebarNotebookItem) => (
           <Collapsible
             key={notebook.url}
             title={notebook.title}
@@ -138,7 +130,7 @@ export function AppSidebar({ initialNotebooks, ...props }: AppSidebarProps) {
                 {/** have professional space to the right */}
                 <SidebarGroupContent>
                   <SidebarMenu className="pl-2">
-                    {notebook.items.map((item: any) => (
+                    {notebook.items.map((item: SidebarNoteItem) => (
                       <SidebarMenuItem key={item.url}>
                         <SidebarMenuButton
                           asChild

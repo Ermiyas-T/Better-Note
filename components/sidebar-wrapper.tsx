@@ -1,32 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { AppSidebar } from "./app-sidebar";
-import { getNotebooks } from "@/Server/notebook";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNotebooks } from "./notebook-context";
 
 export default function SidebarWrapper() {
-  const [notebooks, setNotebooks] = useState<any>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchNotebooks = async () => {
-      try {
-        const result = await getNotebooks();
-        const data = result.notebooks;
-        setNotebooks(data);
-      } catch (err) {
-        console.error("Failed to load notebooks:", err);
-        setError("Failed to load notebooks");
-        setNotebooks([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchNotebooks();
-  }, []);
+  const { notebooks, isLoading } = useNotebooks();
 
   if (isLoading) {
     return (
@@ -40,9 +19,5 @@ export default function SidebarWrapper() {
     );
   }
 
-  if (error) {
-    return <div className="p-4 text-sm text-red-500">{error}</div>;
-  }
-
-  return <AppSidebar initialNotebooks={notebooks} />;
+  return <AppSidebar notebooks={notebooks} />;
 }
