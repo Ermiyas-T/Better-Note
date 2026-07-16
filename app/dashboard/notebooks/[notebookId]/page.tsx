@@ -171,14 +171,43 @@ export default function NotebookPage() {
 
   if (loading) {
     return (
-      <div className="w-full p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-10 w-32" />
+      <div className="mx-auto mt-4 w-full max-w-7xl space-y-6 px-4 pb-8">
+        <div className="flex flex-col gap-4 rounded-2xl border bg-card/60 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-36" />
+          </div>
+          <Skeleton className="h-10 w-28" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-48 w-full rounded-2xl" />
+            <div
+              key={i}
+              className="group relative overflow-hidden rounded-2xl border bg-card/80 shadow-sm"
+            >
+              <Skeleton className="h-1 w-full rounded-none" />
+              <div className="p-5 pb-3">
+                <div className="min-w-0 space-y-3">
+                  <Skeleton className="h-11 w-11 rounded-2xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                </div>
+              </div>
+              <div className="px-5 pb-5">
+                <div className="space-y-1.5">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-5/6" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
+              </div>
+              <div className="flex items-center justify-between border-t bg-muted/20 px-5 py-3">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-4" />
+              </div>
+            </div>
           ))}
         </div>
       </div>

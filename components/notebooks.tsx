@@ -116,10 +116,41 @@ function NoteBooks() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto mt-8 grid w-full grid-cols-1 gap-4 px-4 sm:grid-cols-2 xl:grid-cols-3">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <Skeleton key={i} className="h-44 w-full rounded-2xl" />
-        ))}
+      <div className="mx-auto mt-4 w-full max-w-7xl space-y-6 px-4 pb-8">
+        <div className="flex flex-col gap-4 rounded-2xl border bg-card/60 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+          <Skeleton className="h-10 w-36" />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="group relative overflow-hidden rounded-2xl border bg-card/80 shadow-sm"
+            >
+              <Skeleton className="h-1 w-full rounded-none" />
+              <div className="p-5 pb-3">
+                <div className="min-w-0 space-y-3">
+                  <Skeleton className="h-11 w-11 rounded-2xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                </div>
+              </div>
+              <div className="px-5 pb-4">
+                <Skeleton className="h-9 w-full rounded-xl" />
+              </div>
+              <div className="flex items-center justify-between border-t bg-muted/20 px-5 py-3">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
