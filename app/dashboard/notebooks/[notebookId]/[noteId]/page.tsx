@@ -6,13 +6,13 @@ import { notFound } from "next/navigation";
 import { getNotebookById } from "@/Server/notebook";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     notebookId: string;
     noteId: string;
-  };
+  }>;
 }
 async function NotePage({ params }: PageProps) {
-  const { noteId, notebookId } = params;
+  const { noteId, notebookId } = await params;
   const notebookResult = await getNotebookById({ id: notebookId });
   if (!notebookResult.success || !notebookResult.notebook) {
     notFound();
