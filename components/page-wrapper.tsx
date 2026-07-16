@@ -11,6 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "./ui/breadcrumb";
+import { usePathname } from "next/navigation";
 export type PageWrapperProps = {
   children: React.ReactNode;
   breadcrumbs: {
@@ -25,11 +26,14 @@ export default function PageWrapper({
 }: PageWrapperProps) {
   //add modetoggle for theme change
   // get note name from url and the breadcrum should be dynamic accordingly
-
+  // read the url path so then it is used to conditionally style div
+  const path = usePathname(); // background shouldn't be transparent on specific paths
   return (
     <div className="w-full">
       <SidebarInset>
-        <header className="bg-background sticky top-0 flex h-16 shrink-0 items-center gap-2  px-4 border-2 justify-between ">
+        <header
+          className={`bg-background ${path === "/" ? "sticky top-0" : "sticky top-0 z-100"} flex h-16 shrink-0 items-center gap-2  px-4 border-2 justify-between `}
+        >
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
             <div>

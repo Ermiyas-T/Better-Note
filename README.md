@@ -57,7 +57,7 @@ Follow these steps to set up the project locally.
     DATABASE_URL=postgresql://user:password@host/dbname
     BETTER_AUTH_SECRET=your_generated_secret
     BETTER_AUTH_URL=http://localhost:3000
-    NEXT_PUBLIC_BASE_URL=http://localhost:3000
+    <!-- NEXT_PUBLIC_BASE_URL=http://localhost:3000 -->
 
     # Google OAuth (Optional)
     GOOGLE_CLIENT_ID=your_google_client_id
