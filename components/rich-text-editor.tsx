@@ -1,11 +1,10 @@
-// components/rich-text-editor.tsx
 "use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Highlight from "@tiptap/extension-highlight";
 import TextAlign from "@tiptap/extension-text-align";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Bold,
   Italic,
@@ -52,8 +51,8 @@ const ToolButton = ({
     title={title}
     className={`p-2 rounded transition-colors ${
       active
-        ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300"
-        : "hover:bg-gray-100 text-gray-700 dark:text-gray-300 dark:hover:bg-gray-700"
+        ? "bg-primary/15 text-primary dark:bg-primary/25"
+        : "hover:bg-accent text-muted-foreground hover:text-accent-foreground"
     }`}
   >
     {children}
@@ -69,17 +68,7 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-
-  const initialContent = useMemo(() => {
-    try {
-      return content
-        ? content
-        : { type: "doc", content: [{ type: "paragraph" }] };
-    } catch (e) {
-      console.error("Failed to parse content:", e);
-      return { type: "doc", content: [{ type: "paragraph" }] };
-    }
-  }, [content]);
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
 
   const editor = useEditor({
     extensions: [
@@ -93,13 +82,13 @@ export function RichTextEditor({
         codeBlock: {
           HTMLAttributes: {
             class:
-              "bg-gray-100 dark:bg-gray-700 p-4 rounded font-mono text-sm my-4",
+              "bg-muted p-4 rounded font-mono text-sm my-4",
           },
         },
         code: {
           HTMLAttributes: {
             class:
-              "bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded font-mono text-sm",
+              "bg-muted px-1.5 py-0.5 rounded font-mono text-sm",
           },
         },
         bulletList: {
@@ -120,97 +109,49 @@ export function RichTextEditor({
         multicolor: true,
       }),
     ],
-    content: initialContent,
+    content,
     editorProps: {
       attributes: {
-        class: `min-h-[300px] p-4 focus:outline-none dark:bg-gray-800 dark:text-gray-100 prose dark:prose-invert max-w-none ${className}`,
+        class: `min-h-[300px] p-4 focus:outline-none prose dark:prose-invert max-w-none ${className}`,
       },
     },
     onUpdate: ({ editor }) => {
-      if (onChange) onChange(editor.getText());
+      const html = editor.getHTML();
+      if (onChange) onChange(html);
+
+      if (noteId) {
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = setTimeout(async () => {
+          setIsSaving(true);
+          try {
+            await updateNote({ id: noteId, content: html });
+            setLastSaved(new Date());
+          } catch (err) {
+            console.error("Auto-save failed:", err);
+          } finally {
+            setIsSaving(false);
+          }
+        }, 1000);
+      }
     },
     immediatelyRender: false,
   });
 
-  // Auto-save functionality
   useEffect(() => {
-    if (!editor || !noteId) return;
-
-    let timeoutId: NodeJS.Timeout;
-
-    const handleUpdate = () => {
-      if (!editor) return;
-      setIsSaving(true);
-
-      const content = editor.getText();
-      updateNote({
-        id: noteId,
-        content,
-      })
-        .then(() => setLastSaved(new Date()))
-        .catch(console.error)
-        .finally(() => setIsSaving(false));
-    };
-    ``;
-
-    const onUpdate = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(handleUpdate, 1000);
-    };
-
-    editor.on("update", onUpdate);
     return () => {
-      clearTimeout(timeoutId);
-      editor.off("update", onUpdate);
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
-  }, [editor, noteId]);
+  }, []);
 
-  // Handle keyboard shortcuts
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (!editor) return;
 
-      // Don't handle keyboard shortcuts in code blocks except for Escape
-      if (editor.isActive("codeBlock") && e.key !== "Escape") {
+      if (editor.isActive("codeBlock")) {
+        if (e.key === "Escape") {
+          editor.chain().focus().exitCode().run();
+        }
         return;
-      }
-
-      // Handle Escape key to exit code block
-      if (e.key === "Escape" && editor.isActive("codeBlock")) {
-        editor.chain().focus().exitCode().run();
-        return;
-      }
-
-      // Only handle shortcuts with Ctrl or Cmd key
-      if (!(e.ctrlKey || e.metaKey)) return;
-
-      // Prevent default for all Ctrl/Cmd + key combinations
-      if (e.key.match(/^[1-3e]$/i) || e.key === "\\") {
-        e.preventDefault();
-      }
-
-      // Formatting shortcuts
-      switch (e.key.toLowerCase()) {
-        case "b":
-          editor.chain().focus().toggleBold().run();
-          break;
-        case "i":
-          editor.chain().focus().toggleItalic().run();
-          break;
-        case "e":
-          editor.chain().focus().toggleCode().run();
-          break;
-        case "\\":
-          editor.chain().focus().clearNodes().unsetAllMarks().run();
-          break;
-        case "1":
-        case "2":
-        case "3":
-          if (e.altKey) {
-            const level = parseInt(e.key) as 1 | 2 | 3;
-            editor.chain().focus().toggleHeading({ level }).run();
-          }
-          break;
       }
     },
     [editor]
@@ -218,18 +159,16 @@ export function RichTextEditor({
 
   if (!editor) {
     return (
-      <div className="border rounded-lg p-4 min-h-[200px] flex items-center justify-center text-gray-500">
+      <div className="border rounded-lg p-4 min-h-[200px] flex items-center justify-center text-muted-foreground">
         Loading editor...
       </div>
     );
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700">
-      {/* Toolbar */}
-      <div className="flex flex-wrap justify-between items-center p-2 border-b bg-gray-50 dark:bg-gray-800 dark:border-gray-700 gap-1">
-        <div className="flex flex-wrap gap-1 dark:text-gray-200">
-          {/* Text Formatting */}
+    <div className="rounded-xl border border-border bg-card shadow-sm">
+      <div className="flex flex-wrap justify-between items-center p-2 border-b border-border bg-muted/30 gap-1">
+        <div className="flex flex-wrap gap-1">
           <ToolButton
             onClick={() => editor.chain().focus().setParagraph().run()}
             active={editor.isActive("paragraph")}
@@ -238,7 +177,6 @@ export function RichTextEditor({
             <Pilcrow className="w-4 h-4" />
           </ToolButton>
 
-          {/* Headings */}
           {[1, 2, 3].map((level) => (
             <ToolButton
               key={level}
@@ -258,9 +196,8 @@ export function RichTextEditor({
             </ToolButton>
           ))}
 
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+          <div className="w-px h-6 bg-border mx-1" />
 
-          {/* Text Styles */}
           <ToolButton
             onClick={() => editor.chain().focus().toggleBold().run()}
             active={editor.isActive("bold")}
@@ -290,9 +227,8 @@ export function RichTextEditor({
             <Highlighter className="w-4 h-4" />
           </ToolButton>
 
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+          <div className="w-px h-6 bg-border mx-1" />
 
-          {/* Lists */}
           <ToolButton
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             active={editor.isActive("bulletList")}
@@ -308,9 +244,8 @@ export function RichTextEditor({
             <ListOrdered className="w-4 h-4" />
           </ToolButton>
 
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+          <div className="w-px h-6 bg-border mx-1" />
 
-          {/* Code */}
           <ToolButton
             onClick={() => editor.chain().focus().toggleCode().run()}
             active={editor.isActive("code")}
@@ -326,9 +261,8 @@ export function RichTextEditor({
             <Code2 className="w-4 h-4" />
           </ToolButton>
 
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
+          <div className="w-px h-6 bg-border mx-1" />
 
-          {/* Text Alignment */}
           <ToolButton
             onClick={() => editor.chain().focus().setTextAlign("left").run()}
             active={editor.isActive({ textAlign: "left" })}
@@ -359,13 +293,12 @@ export function RichTextEditor({
           </ToolButton>
         </div>
 
-        {/* Save status */}
-        <div className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+        <div className="text-xs text-muted-foreground ml-2">
           {isSaving ? (
-            <div className="bg-green-400 text-white font-semibold rounded-sm py-2 px-3 flex gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-primary/15 px-2.5 py-1.5 text-xs font-semibold text-primary">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
               Saving
-              <Loader2 className="w-4 h-4 animate-spin" />
-            </div>
+            </span>
           ) : lastSaved ? (
             `Last saved: ${lastSaved.toLocaleTimeString()}`
           ) : (
@@ -374,8 +307,7 @@ export function RichTextEditor({
         </div>
       </div>
 
-      {/* Editor content */}
-      <div onKeyDown={handleKeyDown} className="dark:bg-gray-800">
+      <div onKeyDown={handleKeyDown}>
         <EditorContent
           editor={editor}
           className="min-h-[500px] focus:outline-none"
