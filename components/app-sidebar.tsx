@@ -92,71 +92,91 @@ export function AppSidebar({ notebooks, ...props }: AppSidebarProps) {
   });
   return (
     <Sidebar {...props}>
-      <SidebarHeader className="w-full bg-accent ">
+      <SidebarHeader className="w-full border-b border-sidebar-border">
         <SearchForm />
       </SidebarHeader>
       <SidebarContent className="gap-0">
-        {/* We create a collapsible SidebarGroup for each parent. */}
-        {filteredData.map((notebook: SidebarNotebookItem) => (
-          <Collapsible
-            key={notebook.url}
-            title={notebook.title}
-            defaultOpen
-            className="group/collapsible  "
-          >
-            <SidebarGroup>
-              <SidebarGroupLabel
-                className={`group/label text-base py-5 flex items-center w-full ${
-                  notebook.isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                }`}
-              >
-                <div
-                  className="flex items-center gap-1 flex-1 hover:cursor-pointer"
-                  onClick={() =>
-                    router.push(`/dashboard/notebooks/${notebook.id}`)
-                  }
+        {filteredData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
+            {notebooks.length === 0 ? (
+              <>
+                <FolderClosed className="mb-2 h-8 w-8 text-sidebar-ring/40" />
+                <p className="text-xs text-sidebar-ring/60">No notebooks yet</p>
+              </>
+            ) : (
+              <p className="text-xs text-sidebar-ring/60">No matching notebooks</p>
+            )}
+          </div>
+        ) : (
+          filteredData.map((notebook: SidebarNotebookItem) => (
+            <Collapsible
+              key={notebook.url}
+              title={notebook.title}
+              defaultOpen
+              className="group/collapsible"
+            >
+              <SidebarGroup>
+                <SidebarGroupLabel
+                  className={`group/label flex w-full items-center gap-2 py-3 text-sm font-medium ${
+                    notebook.isActive
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  }`}
                 >
-                  <FolderClosed className="h-4 w-4" />
-                  {notebook.title}
-                </div>
-                <CollapsibleTrigger>
-                  <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                </CollapsibleTrigger>
-              </SidebarGroupLabel>
-              <CollapsibleContent>
-                {/** handle active sidebar button */}
-                {/** have professional space to the right */}
-                <SidebarGroupContent>
-                  <SidebarMenu className="pl-2">
-                    {notebook.items.map((item: SidebarNoteItem) => (
-                      <SidebarMenuItem key={item.url}>
-                        <SidebarMenuButton
-                          asChild
-                          className={`hover:bg-sidebar-accent hover:text-sidebar-accent-foreground shadow-accent ${
-                            item.isActive
-                              ? "bg-sidebar-accent/50 text-foreground font-medium border-l-2 border-primary"
-                              : "text-muted-foreground"
-                          }`}
-                          onClick={() => router.push(item.url)}
-                        >
-                          <Link
-                            href={item.url}
-                            className="flex items-center gap-2 hover:cursor-pointer"
-                          >
-                            <BookIcon className="h-4 w-4 text-sidebar-ring " />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible>
-        ))}
+                  <div
+                    className={`flex min-w-0 flex-1 items-center gap-2 hover:cursor-pointer ${
+                      notebook.isActive ? "font-medium" : ""
+                    }`}
+                    onClick={() =>
+                      router.push(`/dashboard/notebooks/${notebook.id}`)
+                    }
+                  >
+                    <FolderClosed className="size-4 shrink-0" />
+                    <span className="truncate">{notebook.title}</span>
+                  </div>
+                  <CollapsibleTrigger className="shrink-0">
+                    <ChevronRight className="size-4 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                  </CollapsibleTrigger>
+                </SidebarGroupLabel>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu className="pl-2">
+                      {notebook.items.length === 0 ? (
+                        <SidebarMenuItem>
+                          <span className="px-6 py-1.5 text-xs text-sidebar-ring/50">
+                            No notes
+                          </span>
+                        </SidebarMenuItem>
+                      ) : (
+                        notebook.items.map((item: SidebarNoteItem) => (
+                          <SidebarMenuItem key={item.url}>
+                            <SidebarMenuButton
+                              asChild
+                              className={`hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+                                item.isActive
+                                  ? "bg-sidebar-accent/50 text-foreground font-medium border-l-2 border-primary"
+                                  : "text-muted-foreground border-l-2 border-transparent"
+                              }`}
+                              onClick={() => router.push(item.url)}
+                            >
+                              <Link
+                                href={item.url}
+                                className="flex items-center gap-2 hover:cursor-pointer"
+                              >
+                                <BookIcon className="size-4 shrink-0 text-sidebar-ring" />
+                                <span className="truncate">{item.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))
+                      )}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+          ))
+        )}
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
