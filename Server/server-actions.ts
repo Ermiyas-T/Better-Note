@@ -1,4 +1,3 @@
-import { db } from "@/db/drizzle";
 import { auth } from "../lib/auth";
 
 export const signInUser = async (email: string, password: string) => {
