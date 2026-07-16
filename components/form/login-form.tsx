@@ -49,20 +49,25 @@ export function LoginForm({
   const [googleSignInLoading, setGoogleSignInLoading] = useState(false);
   const router = useRouter();
   const googleSignIn = async () => {
-    //sign in with optimistic toast message and try catch wrapping
+    // Google OAuth is a redirect-based flow — the browser redirects to Google
+    // and back. callbackURL tells Better Auth where to land after OAuth completes.
+    // Better Auth returns errors as { error } instead of throwing, so we must
+    // check the result explicitly; otherwise failures leave the button stuck loading.
     try {
       setGoogleSignInLoading(true);
-      await authClient.signIn.social({
+      const result = await authClient.signIn.social({
         provider: "google",
+        callbackURL: "/dashboard",
       });
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Small delay to ensure session is set
 
-      toast.success("Logged in successfully");
-      router.push("/dashboard");
+      if (result?.error) {
+        toast.error("Failed to sign in: " + (result.error.message ?? "Unknown error"));
+        setGoogleSignInLoading(false);
+      }
+      // On success the browser navigates to Google — loading stays active intentionally.
     } catch (e) {
       const error = e as Error;
-      toast.error("Failed to sign in " + error.message);
-    } finally {
+      toast.error("Failed to sign in: " + error.message);
       setGoogleSignInLoading(false);
     }
   };

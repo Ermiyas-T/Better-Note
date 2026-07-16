@@ -23,17 +23,21 @@ export const auth = betterAuth({
   },
   plugins: [nextCookies()],
   emailVerification: {
-    sendVerificationEmail: async ({ user, url, token }, request) => {
-      const { data, error } = await resend.emails.send({
+    sendVerificationEmail: async ({ user, url }) => {
+      const { error } = await resend.emails.send({
         //from resend test email
         from: "Noteforge <onboarding@resend.dev>", // Use a verified domain in production
-        to: "delivered@resend.dev",
+        to: user.email,
         subject: "Verify your email",
         react: EmailVerification({
           userName: user.name,
           verificationUrl: url,
         }),
       });
+
+      if (error) {
+        console.error("[auth] Failed to send verification email", error);
+      }
     },
     sendOnSignIn: true,
   },

@@ -67,7 +67,7 @@ export function EmailVerification({
             {/* Alternative Link */}
             <Section className="mb-[32px]">
               <Text className="text-[14px] text-gray-600 mb-[8px] m-0">
-                If the button doesn't work, copy and paste this link into your
+                If the button doesn&apos;t work, copy and paste this link into your
                 browser:
               </Text>
               <Link
@@ -87,7 +87,7 @@ export function EmailVerification({
                 • This verification link will expire in 24 hours
               </Text>
               <Text className="text-[14px] text-gray-600 mb-[8px] m-0">
-                • If you didn't create an account, please ignore this email
+                • If you didn&apos;t create an account, please ignore this email
               </Text>
               <Text className="text-[14px] text-gray-600 m-0">
                 • Never share this verification link with others
