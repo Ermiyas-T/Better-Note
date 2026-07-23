@@ -1,5 +1,5 @@
 "use server";
-import { insertNotebook, notebooks } from "@/db/schema";
+import { notebooks } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -67,10 +67,10 @@ export const getNotebookById = async ({ id }: getNotebookProps) => {
     };
   }
 };
-export const createNotebook = async ({ name }: { name: string }) => {
+export const createNotebook = async ({ name, userId: _userId }: { name: string; userId?: string }) => {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
-    const userId = session?.user.id;
+    const userId = session?.user.id || _userId;
     if (!userId) {
       return { success: false, message: "User is not found" };
     }

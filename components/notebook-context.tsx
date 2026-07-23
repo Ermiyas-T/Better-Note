@@ -8,6 +8,7 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
+import { authClient } from "@/lib/auth-client";
 import {
   getNotebooks as fetchNotebooksAction,
   deleteNotebook as deleteNotebookAction,
@@ -46,6 +47,7 @@ const NotebookContext = createContext<NotebookContextType | null>(null);
 export function NotebookProvider({ children }: { children: ReactNode }) {
   const [notebooks, setNotebooks] = useState<NotebookItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { data: session } = authClient.useSession();
 
   const refreshNotebooks = useCallback(async () => {
     const { notebooks } = await fetchNotebooksAction();
@@ -62,7 +64,9 @@ export function NotebookProvider({ children }: { children: ReactNode }) {
   }, [refreshNotebooks]);
 
   const createNotebook = useCallback(async (name: string) => {
-    const result = await createNotebookAction({ name });
+    const userId = session?.user.id;
+    if (!userId) throw new Error("User not authenticated");
+    const result = await createNotebookAction({ name, userId });
 
     if (!result.success) {
       throw new Error(result.message);
@@ -79,7 +83,7 @@ export function NotebookProvider({ children }: { children: ReactNode }) {
       },
       ...prev,
     ]);
-  }, []);
+  }, [session]);
 
   const deleteNotebook = useCallback(async (id: string) => {
     setNotebooks((prev) => prev.filter((n) => n.id !== id));
