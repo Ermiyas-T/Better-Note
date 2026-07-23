@@ -81,20 +81,20 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     }
   }
   const handleGoogleSignup = async () => {
-    //sign in with optimistic toast message and try catch wrapping
     try {
       setLoading(true);
-      await authClient.signIn.social({
+      const result = await authClient.signIn.social({
         provider: "google",
+        callbackURL: "/dashboard",
       });
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Small delay to ensure session is set
 
-      toast.success("Logged in successfully");
-      router.push("/dashboard");
+      if (result?.error) {
+        toast.error("Failed to sign in: " + (result.error.message ?? "Unknown error"));
+        setLoading(false);
+      }
     } catch (e) {
       const error = e as Error;
-      toast.error("Failed to sign in " + error.message);
-    } finally {
+      toast.error("Failed to sign in: " + error.message);
       setLoading(false);
     }
   };
