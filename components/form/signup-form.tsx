@@ -67,7 +67,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const router = useRouter();
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
-    const { data: response, error } = await authClient.signUp.email({
+    const { error } = await authClient.signUp.email({
       name: data.name,
       email: data.email,
       password: data.password,

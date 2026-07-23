@@ -39,8 +39,7 @@ export const getNotebooks = async () => {
     });
 
     return { success: true, notebooks: result };
-  } catch (error) {
-    const e = error as Error;
+  } catch {
     return {
       success: false,
       notebooks: [],

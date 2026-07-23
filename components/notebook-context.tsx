@@ -111,7 +111,7 @@ export function NotebookProvider({ children }: { children: ReactNode }) {
       }
       throw new Error(result.message);
     }
-  }, [notebooks, refreshNotebooks]);
+  }, [notebooks]);
 
   const addNote = useCallback((notebookId: string, note: Notes) => {
     setNotebooks((prev) =>
